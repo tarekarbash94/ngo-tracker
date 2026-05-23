@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NGO & Donor Tracker</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #fafaf8;
+  --surface: #ffffff;
+  --surface2: #f4f3f0;
+  --border: rgba(0,0,0,0.1);
+  --border-strong: rgba(0,0,0,0.18);
+  --text: #1a1a18;
+  --text2: #6b6b67;
+  --text3: #a0a09b;
+  --accent: #1a1a18;
+  --green: #1a6b3c;
+  --green-bg: #eaf5ef;
+  --amber: #7a4f00;
+  --amber-bg: #fef3d8;
+  --red: #8b1a1a;
+  --red-bg: #fdeaea;
+  --blue: #0f4c8a;
+  --blue-bg: #e8f1fb;
+  --purple: #4a2d8a;
+  --purple-bg: #eeedfb;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+
+body {
+  font-family: 'Georgia', serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+}
+
+/* ── Setup Screen ── */
+#setup-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.setup-card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 600px;
+  width: 100%;
+}
+
+.setup-logo {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text2);
+  font-family: sans-serif;
+  margin-bottom: 28px;
+}
+
+.setup-title {
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.setup-sub {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.7;
+  margin-bottom: 32px;
+  font-family: sans-serif;
+}
+
+.step {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 0.5px solid var(--border);
+}
+.step:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--text);
+  color: var(--surface);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.step-body { flex: 1; }
+.step-title { font-size: 14px; font-weight: 600; font-family: sans-serif; color: var(--text); margin-bottom: 4px; }
+.step-desc { font-size: 13px; color: var(--text2); font-family: sans-serif; line-height: 1.6; margin-bottom: 10px; }
+
+.code-block {
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.6;
+  white-space: pre;
+  overflow-x: auto;
+  margin-bottom: 8px;
+}
+
+.config-fields { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+.config-field label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text2); font-family: sans-serif; margin-bottom: 5px; }
+.config-field input, .config-field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 0.5px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: sans-serif;
+  background: var(--surface);
+  color: var(--text);
+}
+.config-field input:focus, .config-field select:focus { outline: 2px solid var(--text); outline-offset: 1px; }
+
+.btn-launch {
+  width: 100%;
+  margin-top: 24px;
+  padding: 14px;
+  background: var(--text);
+  color: var(--surface);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: sans-serif;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: opacity 0.15s;
+}
+.btn-launch:hover { opacity: 0.85; }
+
+.warning-box {
+  background: var(--amber-bg);
+  border: 0.5px solid #e0c070;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 12px;
+  font-family: sans-serif;
+  color: var(--amber);
+  line-height: 1.6;
+  margin-top: 8px;
+}
+
+/* ── Main App ── */
+#app { display: none; }
+
+.topbar {
+  background: var(--surface);
+  border-bottom: 0.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 8px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar-logo {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text2);
+  font-family: sans-serif;
+  padding: 14px 12px;
+  border-right: 0.5px solid var(--border);
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.nav-tab {
+  padding: 14px 14px;
+  font-size: 13px;
+  font-family: sans-serif;
+  font-weight: 500;
+  color: var(--text2);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+.nav-badge {
+  background: var(--red-bg);
+  color: var(--red);
+  font-size: 10px;
+  font-weight: 700;
+  font-family: sans-serif;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+}
+
+.user-chip {
+  font-size: 12px;
+  font-family: sans-serif;
+  color: var(--text2);
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.user-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+
+.role-chip {
+  font-size: 11px;
+  font-family: sans-serif;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 10px;
+  background: var(--purple-bg);
+  color: var(--purple);
+}
+
+.sync-btn {
+  font-size: 12px;
+  font-family: sans-serif;
+  color: var(--text2);
+  background: none;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.sync-btn:hover { background: var(--surface2); color: var(--text); }
+
+.view { display: none; padding: 24px 28px; max-width: 900px; margin: 0 auto; }
+.view.active { display: block; }
+
+/* ── Page headers ── */
+.page-header { margin-bottom: 24px; }
+.page-title { font-size: 22px; font-weight: 400; color: var(--text); }
+.page-sub { font-size: 13px; color: var(--text2); font-family: sans-serif; margin-top: 4px; }
+
+/* ── Stats ── */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.stat {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); font-family: sans-serif; margin-bottom: 6px; }
+.stat-val { font-size: 26px; font-weight: 400; color: var(--text); }
+
+/* ── Filters ── */
+.filters {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.search {
+  padding: 8px 12px;
+  border: 0.5px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: sans-serif;
+  background: var(--surface);
+  color: var(--text);
+  min-width: 220px;
+  flex: 1;
+  max-width: 280px;
+}
+.search:focus { outline: 2px solid var(--text); outline-offset: 1px; }
+
+.pill {
+  font-size: 12px;
+  font-family: sans-serif;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 0.5px solid var(--border-strong);
+  color: var(--text2);
+  background: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.12s;
+}
+.pill:hover { background: var(--surface2); color: var(--text); }
+.pill.on { background: var(--text); color: var(--surface); border-color: var(--text); }
+
+/* ── Cards ── */
+.card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 10px;
+  transition: border-color 0.12s;
+}
+.card:hover { border-color: var(--border-strong); }
+.card-row { display: flex; align-items: center; gap: 14px; }
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--blue-bg);
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.card-info { flex: 1; min-width: 0; }
+.card-name { font-size: 15px; font-weight: 400; color: var(--text); margin-bottom: 3px; }
+.card-meta { font-size: 12px; color: var(--text2); font-family: sans-serif; }
+.card-note { font-size: 12px; color: var(--text3); font-family: sans-serif; margin-top: 4px; font-style: italic; }
+
+.card-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+
+/* ── Badges ── */
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: sans-serif;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.b-pending { background: var(--amber-bg); color: var(--amber); }
+.b-approved { background: var(--green-bg); color: var(--green); }
+.b-rejected { background: var(--red-bg); color: var(--red); }
+.b-inprogress { background: var(--blue-bg); color: var(--blue); }
+
+/* ── Action buttons ── */
+.act {
+  font-size: 12px;
+  font-family: sans-serif;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 0.5px solid;
+  cursor: pointer;
+  background: none;
+  transition: background 0.12s;
+}
+.act-approve { border-color: var(--green); color: var(--green); }
+.act-approve:hover { background: var(--green-bg); }
+.act-reject { border-color: var(--red); color: var(--red); }
+.act-reject:hover { background: var(--red-bg); }
+.act-view { border-color: var(--border-strong); color: var(--text2); }
+.act-view:hover { background: var(--surface2); color: var(--text); }
+
+/* ── Form ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.full { grid-column: 1 / -1; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text2);
+  font-family: sans-serif;
+}
+.field input, .field select, .field textarea {
+  padding: 10px 12px;
+  border: 0.5px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: sans-serif;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color 0.12s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+.field textarea { resize: vertical; min-height: 90px; }
+
+.btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+.btn-primary {
+  background: var(--text);
+  color: var(--surface);
+  border: none;
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: sans-serif;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-primary:hover { opacity: 0.82; }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-sec {
+  background: none;
+  border: 0.5px solid var(--border-strong);
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: sans-serif;
+  color: var(--text);
+  cursor: pointer;
+}
+.btn-sec:hover { background: var(--surface2); }
+
+/* ── Profile ── */
+.back-btn {
+  font-size: 13px;
+  font-family: sans-serif;
+  color: var(--text2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 20px;
+  padding: 0;
+}
+.back-btn:hover { color: var(--text); }
+
+.profile-header {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  border-bottom: 0.5px solid var(--border);
+  margin-bottom: 20px;
+}
+.profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--blue-bg);
+  color: var(--blue);
+  font-size: 20px;
+  font-weight: 600;
+  font-family: sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.profile-name { font-size: 20px; font-weight: 400; color: var(--text); margin-bottom: 6px; }
+.profile-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag {
+  font-size: 11px;
+  font-family: sans-serif;
+  padding: 3px 9px;
+  border-radius: 10px;
+  background: var(--surface2);
+  color: var(--text2);
+  border: 0.5px solid var(--border);
+}
+
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+.info-item label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); font-family: sans-serif; display: block; margin-bottom: 3px; }
+.info-item p { font-size: 14px; color: var(--text); font-family: sans-serif; }
+
+.notes-box {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 24px;
+}
+.notes-box-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); font-family: sans-serif; margin-bottom: 6px; }
+.notes-box-text { font-size: 14px; color: var(--text); line-height: 1.7; font-family: sans-serif; }
+
+/* ── Activity log ── */
+.log-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.log-title { font-size: 16px; font-weight: 400; color: var(--text); }
+
+.add-log {
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  display: none;
+}
+.add-log.open { display: block; }
+.add-log-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+
+.log-entry { display: flex; gap: 12px; padding: 14px 0; border-bottom: 0.5px solid var(--border); }
+.log-entry:last-child { border-bottom: none; }
+
+.log-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  font-family: sans-serif;
+}
+.li-call { background: var(--green-bg); color: var(--green); }
+.li-email { background: var(--blue-bg); color: var(--blue); }
+.li-meeting { background: var(--amber-bg); color: var(--amber); }
+.li-proposal { background: var(--purple-bg); color: var(--purple); }
+.li-note { background: var(--surface2); color: var(--text2); }
+
+.log-body { flex: 1; min-width: 0; }
+.log-type { font-size: 13px; font-weight: 600; font-family: sans-serif; color: var(--text); margin-bottom: 3px; }
+.log-text { font-size: 13px; font-family: sans-serif; color: var(--text2); line-height: 1.6; }
+.log-footer { font-size: 11px; font-family: sans-serif; color: var(--text3); margin-top: 5px; }
+
+/* ── Sync status ── */
+.sync-status {
+  font-size: 11px;
+  font-family: sans-serif;
+  padding: 4px 10px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.ss-ok { background: var(--green-bg); color: var(--green); }
+.ss-err { background: var(--red-bg); color: var(--red); }
+.ss-syncing { background: var(--amber-bg); color: var(--amber); }
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--text);
+  color: var(--surface);
+  padding: 11px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: sans-serif;
+  font-weight: 500;
+  z-index: 200;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.22s;
+  pointer-events: none;
+  max-width: 320px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+.empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text3);
+  font-family: sans-serif;
+  font-size: 14px;
+}
+.empty-icon { font-size: 32px; margin-bottom: 10px; }
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0,0,0,0.15);
+  border-top-color: var(--text);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Duplicate warning ── */
+.dup-warning {
+  background: var(--amber-bg);
+  border: 0.5px solid #e0c070;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  font-family: sans-serif;
+  color: var(--amber);
+  margin-top: 12px;
+  display: none;
+  line-height: 1.6;
+}
+.dup-warning.show { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ SETUP SCREEN ═══════════════ -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <div class="setup-logo">NGO & Donor Tracker · Setup</div>
+    <div class="setup-title">Connect your Google Sheet</div>
+    <div class="setup-sub">Follow these three steps once, then your whole team can share the same live tool. Setup takes about 10 minutes.</div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Create the Google Sheet</div>
+        <div class="step-desc">Go to <strong>sheets.google.com</strong> → create a new spreadsheet → name it <strong>NGO Tracker</strong>.<br>Then create <strong>two sheets</strong> (tabs at the bottom): name them exactly <strong>NGOs</strong> and <strong>ActivityLog</strong>.<br><br>In the <strong>NGOs</strong> sheet, add these headers in row 1:</div>
+        <div class="code-block">ID | Name | Type | Country | Focus | Capacity | Contact | Email | Website | Source | Priority | Notes | SubmittedBy | SubmittedDate | Status | Managers</div>
+        <div class="step-desc" style="margin-top:8px;">In the <strong>ActivityLog</strong> sheet, add these headers in row 1:</div>
+        <div class="code-block">ID | NgoID | Type | Description | LoggedBy | Date</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Deploy a Google Apps Script as a Web App</div>
+        <div class="step-desc">In your Google Sheet, go to <strong>Extensions → Apps Script</strong>. Delete any existing code and paste this entire script, then click <strong>Deploy → New deployment → Web app</strong>. Set "Who has access" to <strong>Anyone</strong> and copy the Web App URL.</div>
+        <div class="code-block">const SS = SpreadsheetApp.getActiveSpreadsheet();
+
+function doGet(e) {
+  const action = e.parameter.action;
+  if (action === 'getNGOs') return res(getNGOs());
+  if (action === 'getLogs') return res(getLogs(e.parameter.ngoId));
+  return res({error:'unknown action'});
+}
+
+function doPost(e) {
+  const d = JSON.parse(e.postData.contents);
+  if (d.action === 'addNGO') return res(addNGO(d));
+  if (d.action === 'updateStatus') return res(updateStatus(d));
+  if (d.action === 'addLog') return res(addLog(d));
+  return res({error:'unknown'});
+}
+
+function res(data) {
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getNGOs() {
+  const sh = SS.getSheetByName('NGOs');
+  const rows = sh.getDataRange().getValues();
+  const headers = rows[0];
+  return rows.slice(1).map(r => {
+    const o = {};
+    headers.forEach((h,i) => o[h] = r[i]);
+    return o;
+  });
+}
+
+function getLogs(ngoId) {
+  const sh = SS.getSheetByName('ActivityLog');
+  const rows = sh.getDataRange().getValues();
+  const headers = rows[0];
+  return rows.slice(1)
+    .filter(r => String(r[1]) === String(ngoId))
+    .map(r => {
+      const o = {};
+      headers.forEach((h,i) => o[h] = r[i]);
+      return o;
+    });
+}
+
+function addNGO(d) {
+  const sh = SS.getSheetByName('NGOs');
+  const id = Date.now();
+  sh.appendRow([id, d.Name, d.Type, d.Country, d.Focus,
+    d.Capacity, d.Contact, d.Email, d.Website, d.Source,
+    d.Priority, d.Notes, d.SubmittedBy,
+    new Date().toLocaleDateString('en-GB'), 'pending', d.Managers||'']);
+  return {success:true, id};
+}
+
+function updateStatus(d) {
+  const sh = SS.getSheetByName('NGOs');
+  const rows = sh.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === String(d.id)) {
+      sh.getRange(i+1, 15).setValue(d.status);
+      return {success:true};
+    }
+  }
+  return {error:'not found'};
+}
+
+function addLog(d) {
+  const sh = SS.getSheetByName('ActivityLog');
+  const id = Date.now();
+  sh.appendRow([id, d.ngoId, d.type, d.description,
+    d.loggedBy, new Date().toLocaleDateString('en-GB')]);
+  return {success:true, id};
+}</div>
+        <div class="warning-box">⚠ After deploying, authorise the script when Google asks. Copy the Web App URL — it looks like: https://script.google.com/macros/s/XXXX.../exec</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Enter your details below and launch</div>
+        <div class="step-desc">Fill in your Web App URL, your name, and your role. The team shares this same HTML file — each person enters their own name when they first open it.</div>
+      </div>
+    </div>
+
+    <div class="config-fields">
+      <div class="config-field">
+        <label>Google Apps Script Web App URL *</label>
+        <input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/.../exec" />
+      </div>
+      <div class="config-field">
+        <label>Your name *</label>
+        <input type="text" id="cfg-name" placeholder="e.g. Sara M." />
+      </div>
+      <div class="config-field">
+        <label>Your role</label>
+        <select id="cfg-role">
+          <option value="member">Team member</option>
+          <option value="manager">Manager (can approve / reject)</option>
+        </select>
+      </div>
+      <div class="config-field">
+        <label>Manager names (comma-separated, for notifications)</label>
+        <input type="text" id="cfg-managers" placeholder="e.g. Ahmed K., Sara M." />
+      </div>
+    </div>
+
+    <button class="btn-launch" onclick="launch()">Launch tool →</button>
+  </div>
+</div>
+
+<!-- ═══════════════ MAIN APP ═══════════════ -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">NGO Tracker</div>
+    <button class="nav-tab active" onclick="showTab('form')" id="tab-form">＋ New NGO</button>
+    <button class="nav-tab" onclick="showTab('dashboard')" id="tab-dashboard">
+      Manager view <span class="nav-badge" id="pending-badge" style="display:none">0</span>
+    </button>
+    <button class="nav-tab" onclick="showTab('tracker')" id="tab-tracker">NGO tracker</button>
+    <div class="topbar-right">
+      <span class="sync-status ss-ok" id="sync-status">● synced</span>
+      <button class="sync-btn" onclick="syncAll()">↻ Refresh</button>
+      <div class="user-chip">
+        <div class="user-dot"></div>
+        <span id="topbar-user">—</span>
+      </div>
+      <span class="role-chip" id="topbar-role">member</span>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div class="view active" id="view-form">
+    <div class="page-header">
+      <div class="page-title">Submit a potential NGO or donor</div>
+      <div class="page-sub">Fill in everything you know. Your manager will review before outreach begins.</div>
+    </div>
+
+    <div id="dup-warning" class="dup-warning"></div>
+
+    <div class="form-grid">
+      <div class="field full">
+        <label>Organisation name *</label>
+        <input type="text" id="f-name" placeholder="e.g. Green Horizons Foundation" oninput="checkDuplicate()" />
+      </div>
+      <div class="field">
+        <label>Organisation type *</label>
+        <select id="f-type">
+          <option value="">Select type</option>
+          <option>NGO / Non-profit</option>
+          <option>Corporate donor</option>
+          <option>Individual donor</option>
+          <option>Government / Institutional</option>
+          <option>Foundation</option>
+          <option>Faith-based organisation</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Country / Region *</label>
+        <input type="text" id="f-country" placeholder="e.g. United Kingdom" />
+      </div>
+      <div class="field">
+        <label>Focus area / Cause</label>
+        <input type="text" id="f-focus" placeholder="e.g. Education, Climate, Health" />
+      </div>
+      <div class="field">
+        <label>Estimated giving capacity</label>
+        <select id="f-capacity">
+          <option value="">Unknown</option>
+          <option>Small (under £10k)</option>
+          <option>Medium (£10k – £100k)</option>
+          <option>Large (£100k – £500k)</option>
+          <option>Major (£500k+)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Primary contact name</label>
+        <input type="text" id="f-contact" placeholder="Name of person to approach" />
+      </div>
+      <div class="field">
+        <label>Contact email / phone</label>
+        <input type="text" id="f-email" placeholder="email@org.com or +44..." />
+      </div>
+      <div class="field">
+        <label>Website</label>
+        <input type="text" id="f-website" placeholder="https://..." />
+      </div>
+      <div class="field">
+        <label>How did you find this lead?</label>
+        <select id="f-source">
+          <option value="">Select source</option>
+          <option>Conference / Event</option>
+          <option>Online research</option>
+          <option>Referral</option>
+          <option>LinkedIn / Social media</option>
+          <option>Database / Directory</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Priority level</label>
+        <select id="f-priority">
+          <option>Medium</option>
+          <option>Low</option>
+          <option>High</option>
+          <option>Urgent</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label>Notes / Context</label>
+        <textarea id="f-notes" placeholder="Why is this a good fit? Any relevant background, connection, or timing..."></textarea>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-sec" onclick="clearForm()">Clear</button>
+      <button class="btn-primary" id="submit-btn" onclick="submitForm()">Submit for approval →</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="view" id="view-dashboard">
+    <div class="page-header">
+      <div class="page-title">Manager approval dashboard</div>
+      <div class="page-sub">Review team submissions and approve or reject before outreach begins.</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Total leads</div><div class="stat-val" id="s-total">—</div></div>
+      <div class="stat"><div class="stat-label">Pending review</div><div class="stat-val" id="s-pending" style="color:var(--amber)">—</div></div>
+      <div class="stat"><div class="stat-label">Approved</div><div class="stat-val" id="s-approved" style="color:var(--green)">—</div></div>
+      <div class="stat"><div class="stat-label">In progress</div><div class="stat-val" id="s-inprogress" style="color:var(--blue)">—</div></div>
+    </div>
+    <div class="filters">
+      <input class="search" type="text" id="dash-search" placeholder="Search by name, country, or team member..." oninput="renderDash()" />
+      <button class="pill on" onclick="setDashFilter('all',this)">All</button>
+      <button class="pill" onclick="setDashFilter('pending',this)">Pending</button>
+      <button class="pill" onclick="setDashFilter('approved',this)">Approved</button>
+      <button class="pill" onclick="setDashFilter('rejected',this)">Not proceeding</button>
+    </div>
+    <div id="dash-list"></div>
+  </div>
+
+  <!-- TRACKER -->
+  <div class="view" id="view-tracker">
+    <div class="page-header">
+      <div class="page-title">NGO tracker</div>
+      <div class="page-sub">All NGOs with full activity history. Click any row to open the profile.</div>
+    </div>
+    <div class="filters">
+      <input class="search" type="text" id="tracker-search" placeholder="Search NGOs..." oninput="renderTracker()" />
+      <button class="pill on" onclick="setTrackerFilter('all',this)">All</button>
+      <button class="pill" onclick="setTrackerFilter('approved',this)">Approved</button>
+      <button class="pill" onclick="setTrackerFilter('inprogress',this)">In progress</button>
+      <button class="pill" onclick="setTrackerFilter('pending',this)">Pending</button>
+    </div>
+    <div id="tracker-list"></div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="view" id="view-profile">
+    <button class="back-btn" onclick="showTab('tracker')">← Back to tracker</button>
+    <div id="profile-content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyfycQZlA4HlbJKQESEbjdL1ojzHG3UTXxkHapvkj_xii5l2-JSO8yQpKU0m5tyjeIu/exec';
+let USER_NAME = '';
+let USER_ROLE = 'member';
+let MANAGERS = '';
+let ngos = [];
+let dashFilter = 'all';
+let trackerFilter = 'all';
+let selectedNgo = null;
+let profileLogs = [];
+
+const logIcons = { call:'📞', email:'✉', meeting:'👥', proposal:'📄', note:'📝' };
+const logClass = { call:'li-call', email:'li-email', meeting:'li-meeting', proposal:'li-proposal', note:'li-note' };
+const logLabel = { call:'Call', email:'Email', meeting:'Meeting', proposal:'Proposal sent', note:'Note' };
+
+function launch() {
+  const url = document.getElementById('cfg-url').value.trim();
+  const name = document.getElementById('cfg-name').value.trim();
+  const role = document.getElementById('cfg-role').value;
+  const managers = document.getElementById('cfg-managers').value.trim();
+  if (!url || !name) { toast('Please enter the Web App URL and your name'); return; }
+  SCRIPT_URL = url;
+  USER_NAME = name;
+  USER_ROLE = role;
+  MANAGERS = managers;
+  localStorage.setItem('ngo_cfg', JSON.stringify({url, name, role, managers}));
+  initApp();
+}
+
+function initApp() {
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('topbar-user').textContent = USER_NAME;
+  document.getElementById('topbar-role').textContent = USER_ROLE === 'manager' ? 'Manager' : 'Team member';
+  if (USER_ROLE !== 'manager') {
+    document.getElementById('tab-dashboard').style.display = 'none';
+  }
+  syncAll();
+}
+
+async function syncAll() {
+  setSyncStatus('syncing');
+  try {
+    const r = await fetch(SCRIPT_URL + '?action=getNGOs');
+    const data = await r.json();
+    if (Array.isArray(data)) {
+      ngos = data;
+      updateStats();
+      renderDash();
+      renderTracker();
+      setSyncStatus('ok');
+    } else {
+      setSyncStatus('err');
+    }
+  } catch(e) {
+    setSyncStatus('err');
+    toast('Could not reach Google Sheet — check the URL and try again');
+  }
+}
+
+function setSyncStatus(s) {
+  const el = document.getElementById('sync-status');
+  el.className = 'sync-status';
+  if (s === 'ok') { el.classList.add('ss-ok'); el.textContent = '● synced'; }
+  else if (s === 'err') { el.classList.add('ss-err'); el.textContent = '● error'; }
+  else { el.classList.add('ss-syncing'); el.textContent = '● syncing…'; }
+}
+
+function updateStats() {
+  const p = ngos.filter(n=>n.Status==='pending').length;
+  document.getElementById('s-total').textContent = ngos.length;
+  document.getElementById('s-pending').textContent = p;
+  document.getElementById('s-approved').textContent = ngos.filter(n=>n.Status==='approved').length;
+  document.getElementById('s-inprogress').textContent = ngos.filter(n=>n.Status==='inprogress').length;
+  const badge = document.getElementById('pending-badge');
+  badge.textContent = p;
+  badge.style.display = p > 0 ? 'inline' : 'none';
+}
+
+function showTab(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  const t = document.getElementById('tab-'+id);
+  if (t) t.classList.add('active');
+  if (id === 'dashboard') renderDash();
+  if (id === 'tracker') renderTracker();
+}
+
+function statusBadge(s) {
+  const map = { pending:'Pending review', approved:'Approved', rejected:'Not proceeding', inprogress:'In progress' };
+  const cls = { pending:'b-pending', approved:'b-approved', rejected:'b-rejected', inprogress:'b-inprogress' };
+  return `<span class="badge ${cls[s]||'b-pending'}">${map[s]||s}</span>`;
+}
+
+function initials(name) {
+  if (!name) return '?';
+  return name.trim().split(/\s+/).slice(0,2).map(w=>w[0].toUpperCase()).join('');
+}
+
+// ── Dashboard ──
+function setDashFilter(f, btn) {
+  dashFilter = f;
+  document.querySelectorAll('#view-dashboard .pill').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderDash();
+}
+
+function renderDash() {
+  const q = (document.getElementById('dash-search').value||'').toLowerCase();
+  const filtered = ngos.filter(n => {
+    const mf = dashFilter === 'all' || n.Status === dashFilter;
+    const mq = !q || (n.Name||'').toLowerCase().includes(q) || (n.Country||'').toLowerCase().includes(q) || (n.SubmittedBy||'').toLowerCase().includes(q);
+    return mf && mq;
+  });
+  const el = document.getElementById('dash-list');
+  if (!filtered.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>No entries match this filter.</div>'; return; }
+  el.innerHTML = filtered.map(n => `
+    <div class="card">
+      <div class="card-row">
+        <div class="avatar">${initials(n.Name)}</div>
+        <div class="card-info">
+          <div class="card-name">${n.Name||'Unnamed'}</div>
+          <div class="card-meta">${n.Type||''} · ${n.Country||''} · Submitted by <strong>${n.SubmittedBy||'?'}</strong> · ${n.SubmittedDate||''}</div>
+          ${n.Notes ? `<div class="card-note">"${(n.Notes||'').substring(0,100)}${(n.Notes||'').length>100?'…':''}"</div>` : ''}
+        </div>
+        <div class="card-actions">
+          ${statusBadge(n.Status)}
+          ${USER_ROLE === 'manager' && n.Status === 'pending' ? `
+            <button class="act act-approve" onclick="changeStatus('${n.ID}','approved','${n.Name}')">✓ Approve</button>
+            <button class="act act-reject" onclick="changeStatus('${n.ID}','rejected','${n.Name}')">✗ Reject</button>
+          ` : ''}
+          ${USER_ROLE === 'manager' && n.Status === 'approved' ? `
+            <button class="act act-view" onclick="changeStatus('${n.ID}','inprogress','${n.Name}')">→ In progress</button>
+          ` : ''}
+          <button class="act act-view" onclick="openProfile('${n.ID}')">View profile</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function changeStatus(id, status, name) {
+  setSyncStatus('syncing');
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'updateStatus', id, status })
+    });
+    const ngo = ngos.find(n=>String(n.ID)===String(id));
+    if (ngo) ngo.Status = status;
+    updateStats();
+    renderDash();
+    setSyncStatus('ok');
+    const label = status === 'approved' ? `✓ ${name} approved` : status === 'rejected' ? `✗ ${name} marked as not proceeding` : `→ ${name} set to in progress`;
+    toast(label);
+  } catch(e) {
+    setSyncStatus('err');
+    toast('Could not update — check your connection');
+  }
+}
+
+// ── Tracker ──
+function setTrackerFilter(f, btn) {
+  trackerFilter = f;
+  document.querySelectorAll('#view-tracker .pill').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderTracker();
+}
+
+function renderTracker() {
+  const q = (document.getElementById('tracker-search').value||'').toLowerCase();
+  const filtered = ngos.filter(n => {
+    const mf = trackerFilter === 'all' || n.Status === trackerFilter;
+    const mq = !q || (n.Name||'').toLowerCase().includes(q) || (n.Country||'').toLowerCase().includes(q);
+    return mf && mq;
+  });
+  const el = document.getElementById('tracker-list');
+  if (!filtered.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div>No NGOs found.</div>'; return; }
+  el.innerHTML = filtered.map(n => `
+    <div class="card" style="cursor:pointer;" onclick="openProfile('${n.ID}')">
+      <div class="card-row">
+        <div class="avatar">${initials(n.Name)}</div>
+        <div class="card-info">
+          <div class="card-name">${n.Name||'Unnamed'}</div>
+          <div class="card-meta">${n.Type||''} · ${n.Country||''} · ${n.Focus||''}</div>
+        </div>
+        <div class="card-actions">
+          ${statusBadge(n.Status)}
+          <span style="font-size:12px;color:var(--text3);font-family:sans-serif;">${n.Priority||''} priority</span>
+          <span style="font-size:18px;color:var(--text3);">›</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Profile ──
+async function openProfile(id) {
+  selectedNgo = ngos.find(n=>String(n.ID)===String(id));
+  if (!selectedNgo) return;
+  profileLogs = [];
+
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-profile').classList.add('active');
+
+  renderProfile(true);
+
+  try {
+    const r = await fetch(SCRIPT_URL + '?action=getLogs&ngoId=' + selectedNgo.ID);
+    profileLogs = await r.json();
+    if (!Array.isArray(profileLogs)) profileLogs = [];
+    renderProfile(false);
+  } catch(e) {
+    renderProfile(false);
+  }
+}
+
+function renderProfile(loading) {
+  const n = selectedNgo;
+  const logs = profileLogs;
+
+  const logHTML = loading
+    ? '<div class="empty"><span class="spinner"></span> Loading activities…</div>'
+    : logs.length
+      ? logs.slice().reverse().map(l => `
+        <div class="log-entry">
+          <div class="log-icon ${logClass[l.Type]||'li-note'}">${logIcons[l.Type]||'📝'}</div>
+          <div class="log-body">
+            <div class="log-type">${logLabel[l.Type]||l.Type}</div>
+            <div class="log-text">${l.Description||''}</div>
+            <div class="log-footer">${l.LoggedBy||''} · ${l.Date||''}</div>
+          </div>
+        </div>
+      `).join('')
+      : '<div style="font-size:13px;font-family:sans-serif;color:var(--text3);padding:8px 0;">No activities logged yet.</div>';
+
+  document.getElementById('profile-content').innerHTML = `
+    <div class="profile-header">
+      <div class="profile-avatar">${initials(n.Name)}</div>
+      <div style="flex:1;">
+        <div class="profile-name">${n.Name||'Unnamed'}</div>
+        <div class="profile-tags">
+          ${statusBadge(n.Status)}
+          <span class="tag">${n.Priority||''} priority</span>
+          <span class="tag">${n.Type||''}</span>
+          <span class="tag">${n.Country||''}</span>
+          ${n.Focus ? `<span class="tag">${n.Focus}</span>` : ''}
+        </div>
+      </div>
+      ${USER_ROLE==='manager' ? `
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${n.Status==='pending'?`<button class="act act-approve" onclick="changeStatus('${n.ID}','approved','${n.Name}');openProfile('${n.ID}')">✓ Approve</button><button class="act act-reject" onclick="changeStatus('${n.ID}','rejected','${n.Name}');showTab('tracker')">✗ Reject</button>`:''}
+          ${n.Status==='approved'?`<button class="act act-view" onclick="changeStatus('${n.ID}','inprogress','${n.Name}');openProfile('${n.ID}')">→ Mark in progress</button>`:''}
+        </div>
+      ` : ''}
+    </div>
+
+    <div class="info-grid">
+      <div class="info-item"><label>Focus area</label><p>${n.Focus||'—'}</p></div>
+      <div class="info-item"><label>Giving capacity</label><p>${n.Capacity||'Unknown'}</p></div>
+      <div class="info-item"><label>Primary contact</label><p>${n.Contact||'—'}</p></div>
+      <div class="info-item"><label>Email / Phone</label><p style="color:var(--blue)">${n.Email||'—'}</p></div>
+      <div class="info-item"><label>Website</label><p style="color:var(--blue)">${n.Website||'—'}</p></div>
+      <div class="info-item"><label>Lead source</label><p>${n.Source||'—'}</p></div>
+      <div class="info-item"><label>Submitted by</label><p>${n.SubmittedBy||'—'}</p></div>
+      <div class="info-item"><label>Submitted on</label><p>${n.SubmittedDate||'—'}</p></div>
+    </div>
+
+    ${n.Notes ? `
+      <div class="notes-box">
+        <div class="notes-box-label">Notes</div>
+        <div class="notes-box-text">${n.Notes}</div>
+      </div>
+    ` : ''}
+
+    <div class="log-header">
+      <div class="log-title">Activity log</div>
+      <button class="act act-view" onclick="toggleAddLog()">+ Add activity</button>
+    </div>
+
+    <div class="add-log" id="add-log-panel">
+      <div class="add-log-grid">
+        <div class="field">
+          <label>Activity type</label>
+          <select id="log-type">
+            <option value="call">Call</option>
+            <option value="email">Email</option>
+            <option value="meeting">Meeting</option>
+            <option value="proposal">Proposal sent</option>
+            <option value="note">Note</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Logged by</label>
+          <input type="text" id="log-by" value="${USER_NAME}" />
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:12px;">
+        <label>Description</label>
+        <textarea id="log-desc" placeholder="What happened? Key outcomes, next steps, commitments made…"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button class="btn-sec" style="padding:7px 16px;font-size:13px;" onclick="toggleAddLog()">Cancel</button>
+        <button class="btn-primary" style="padding:7px 16px;font-size:13px;" onclick="saveLog()">Save activity →</button>
+      </div>
+    </div>
+
+    <div id="log-entries">${logHTML}</div>
+  `;
+}
+
+function toggleAddLog() {
+  const p = document.getElementById('add-log-panel');
+  if (p) p.classList.toggle('open');
+}
+
+async function saveLog() {
+  const type = document.getElementById('log-type').value;
+  const by = document.getElementById('log-by').value.trim();
+  const desc = document.getElementById('log-desc').value.trim();
+  if (!desc) { toast('Please add a description'); return; }
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action:'addLog', ngoId: selectedNgo.ID, type, description: desc, loggedBy: by||USER_NAME })
+    });
+    toast('Activity saved to Google Sheet');
+    openProfile(selectedNgo.ID);
+  } catch(e) {
+    toast('Could not save — check your connection');
+  }
+}
+
+// ── Form ──
+function checkDuplicate() {
+  const name = (document.getElementById('f-name').value||'').toLowerCase().trim();
+  const dup = ngos.find(n => (n.Name||'').toLowerCase().includes(name) && name.length > 3);
+  const el = document.getElementById('dup-warning');
+  if (dup && name) {
+    el.textContent = `⚠ "${dup.Name}" already exists in the tracker (submitted by ${dup.SubmittedBy}, status: ${dup.Status}). Please check before submitting to avoid duplicate outreach.`;
+    el.classList.add('show');
+  } else {
+    el.classList.remove('show');
+  }
+}
+
+async function submitForm() {
+  const name = document.getElementById('f-name').value.trim();
+  const type = document.getElementById('f-type').value;
+  const country = document.getElementById('f-country').value.trim();
+  if (!name || !type || !country) { toast('Please fill in name, type, and country'); return; }
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'addNGO',
+        Name: name, Type: type, Country: country,
+        Focus: document.getElementById('f-focus').value,
+        Capacity: document.getElementById('f-capacity').value,
+        Contact: document.getElementById('f-contact').value,
+        Email: document.getElementById('f-email').value,
+        Website: document.getElementById('f-website').value,
+        Source: document.getElementById('f-source').value,
+        Priority: document.getElementById('f-priority').value,
+        Notes: document.getElementById('f-notes').value,
+        SubmittedBy: USER_NAME,
+        Managers: MANAGERS
+      })
+    });
+    clearForm();
+    await syncAll();
+    toast('Submitted — your manager will review shortly');
+  } catch(e) {
+    toast('Could not submit — check your connection');
+  }
+  btn.disabled = false;
+  btn.textContent = 'Submit for approval →';
+}
+
+function clearForm() {
+  ['f-name','f-type','f-country','f-focus','f-capacity','f-contact','f-email','f-website','f-source','f-notes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('f-priority').value = 'Medium';
+  document.getElementById('dup-warning').classList.remove('show');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Auto-restore config from localStorage
+SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyfycQZlA4HlbJKQESEbjdL1ojzHG3UTXxkHapvkj_xii5l2-JSO8yQpKU0m5tyjeIu/exec'; USER_NAME = 'Tarek'; USER_ROLE = 'manager'; initApp(); const saved = localStorage.getItem('ngo_cfg_DISABLED');
+if (saved) {
+  try {
+    const c = JSON.parse(saved);
+    if (c.url && c.name) {
+      SCRIPT_URL = c.url; USER_NAME = c.name; USER_ROLE = c.role||'member'; MANAGERS = c.managers||'';
+      initApp();
+    }
+  } catch(e) {}
+}
+</script>
+</body>
+</html>
